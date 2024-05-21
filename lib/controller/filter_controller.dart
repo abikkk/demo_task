@@ -22,6 +22,7 @@ class FilterController extends GetxController {
       filterCount = 0.obs; // filter count
 
   // UIUtils uiUtils = UIUtils();
+  @override
   onInit() {
     getBrands();
     super.onInit();

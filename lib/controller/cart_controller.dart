@@ -1,11 +1,7 @@
-import 'dart:math';
-
 import 'package:demo_task/model/cart_item_model.dart';
 import 'package:demo_task/model/product_model.dart';
 import 'package:firebase_cloud_firestore/firebase_cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:demo_task/model/order_model.dart';
 import '../constants.dart';
 
 class CartController extends GetxController {
@@ -73,7 +69,7 @@ class CartController extends GetxController {
     }
   }
 
-  updateCartItem({required int index, bool add = true}) {
+  updateCartItem({required int index, bool add = true}) async {
     if (add) {
       cart[index].quantity++;
     } else {

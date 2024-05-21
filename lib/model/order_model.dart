@@ -26,7 +26,7 @@ class Receipt {
   late final String paymentMethod;
 
   Receipt.fromJson(Map<String, dynamic> json) {
-    code = json['code'];
+    code = (json['code']).toString();
     cart = json['cart'];
     placedIn = json['placedIn'];
     totalPrice = json['totalPrice'];
@@ -39,11 +39,11 @@ class Receipt {
       DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
     final docData = documentSnapshot.data()!;
     return Receipt(
-      code: docData['code'],
+      code: (docData['code']).toString(),
       cart: (docData['cart'] as List<dynamic>)
           .map((e) => CartItem.fromJson(e))
           .toList(),
-      placedIn: docData['placedIn'],
+      placedIn: docData['placedIn'] ?? Timestamp.now(),
       totalPrice: docData['totalPrice'] ?? 0.0,
       shippingPrice: docData['shippingPrice'] ?? 0.0,
       address: (docData['address']).toString(),

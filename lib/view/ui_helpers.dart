@@ -3,8 +3,10 @@ import 'package:demo_task/constants.dart';
 import 'package:demo_task/controller/filter_controller.dart';
 import 'package:demo_task/controller/receipt_controller.dart';
 import 'package:demo_task/model/product_model.dart';
+import 'package:demo_task/model/product_review_model.dart';
 import 'package:demo_task/view/cart_screen.dart';
 import 'package:demo_task/view/dashboard_screen.dart';
+import 'package:demo_task/view/loader_helpers.dart';
 import 'package:demo_task/view/product_screen.dart';
 import 'package:demo_task/view/receipt_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -24,6 +26,7 @@ class UIUtils {
   CartController cartController = Get.find<CartController>();
   FilterController filterController = Get.find<FilterController>();
   ReceiptController receiptController = Get.find<ReceiptController>();
+  Loaders loaders = Loaders();
 
   // app bar
   AppBar customAppBar({
@@ -149,13 +152,13 @@ class UIUtils {
   }
 
   // brand bubble for dashboard
-  Widget brandBubbles(
-      {required String brand, bool active = false, bool filterScreen = false}) {
+  Widget tipBubbles(
+      {required String title, bool active = false, bool filterScreen = false}) {
     return Container(
       padding: EdgeInsets.symmetric(
           vertical: (filterScreen) ? 0 : 5, horizontal: 10),
       child: Text(
-        brand,
+        title,
         style: TextStyle(
             color: (active) ? Colors.black : Colors.black45, fontSize: 18),
       ),
@@ -174,7 +177,6 @@ class UIUtils {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          // border: Border.all(color: Colors.white),
           image: DecorationImage(
             image: imageProvider,
             fit: contain ? BoxFit.contain : BoxFit.cover,
@@ -182,7 +184,8 @@ class UIUtils {
         ),
       ),
       progressIndicatorBuilder: (context, url, downloadProgress) =>
-          CircularProgressIndicator(value: downloadProgress.progress),
+          loaders.imageLoader(height, width),
+      // CircularProgressIndicator(value: downloadProgress.progress),
       errorWidget: (context, url, error) => Container(
         width: width,
         height: height,
@@ -205,6 +208,7 @@ class UIUtils {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // product and brand image
           Expanded(
               child: Stack(
             children: [
@@ -237,30 +241,47 @@ class UIUtils {
           ),
 
           // product rating and review
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(
+              // SizedBox(
+              //   height: 60,
+              //   child: ListView.separated(
+              //     itemCount: product.rating.toInt(),
+              //     scrollDirection: Axis.horizontal,
+              //     shrinkWrap: true,
+              //     itemBuilder: (BuildContext context, int index) => const Icon(
+              //       Icons.star,
+              //       color: Colors.yellow,
+              //       size: 15,
+              //     ),
+              //     separatorBuilder: (BuildContext context, int index) =>
+              //         const SizedBox(
+              //       width: 5,
+              //     ),
+              //   ),
+              // ),
+              const Icon(
                 Icons.star,
                 color: Colors.yellow,
                 size: 15,
               ),
-              SizedBox(
+              const SizedBox(
                 width: 5,
               ),
               Text(
-                '4.5',
-                style: TextStyle(
+                '${product.rating}',
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 5,
               ),
               Text(
-                '(109 Reviews)',
-                style: TextStyle(
+                '${product.reviews} Review(s)',
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                   fontWeight: FontWeight.w400,
@@ -282,6 +303,7 @@ class UIUtils {
     );
   }
 
+  // cart item
   Widget cartItem({required int index}) {
     return Slidable(
       endActionPane: ActionPane(
@@ -422,6 +444,7 @@ class UIUtils {
     );
   }
 
+  // receipt item
   Widget receiptItem({required int index}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,9 +544,6 @@ class UIUtils {
                   '(${receiptController.receipts[index].totalPrice} + ${receiptController.receipts[index].shippingPrice})',
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
-                // const SizedBox(
-                //   height: 5,
-                // ),
                 Text(DateTime.fromMillisecondsSinceEpoch(receiptController
                         .receipts[index].placedIn.millisecondsSinceEpoch)
                     .toString()
@@ -535,6 +555,108 @@ class UIUtils {
         ),
       ],
     );
+  }
+
+  // item review
+  Widget reviewItem({bool showAll = false, int stars = 0}) {
+    List<ProductReview> temp = receiptController.productReviews
+        .where((p0) =>
+            p0.productId.toLowerCase() ==
+            productController.currentProduct!.value.name.toLowerCase())
+        .toList();
+
+    if (stars == 1) {
+      temp.removeWhere((element) => element.rating != 1);
+    } else if (stars == 2) {
+      temp.removeWhere((element) => element.rating != stars);
+    } else if (stars == 3) {
+      temp.removeWhere((element) => element.rating != stars);
+    } else if (stars == 4) {
+      temp.removeWhere((element) => element.rating != stars);
+    } else if (stars == 5) {
+      temp.removeWhere((element) => element.rating != stars);
+    }
+
+    return (temp.isEmpty)
+        ? const Center(
+            child: Text(
+              'No reviews found!',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
+            ),
+          )
+        : ListView.separated(
+            shrinkWrap: true,
+            itemCount: (showAll)
+                ? temp.length
+                : (temp.length > 3)
+                    ? 3
+                    : temp.length,
+            itemBuilder: (BuildContext context, int index) => Container(
+              height: 80,
+              padding: EdgeInsets.zero,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          temp[index].customerId,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      Text(
+                        DateTime.fromMillisecondsSinceEpoch(
+                                temp[index].addedIn.millisecondsSinceEpoch)
+                            .toString()
+                            .split(' ')
+                            .first,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w300),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      if (temp[index].description.trim().isNotEmpty)
+                        Expanded(
+                          child: Text(
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
+                            temp[index].description,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w400),
+                          ),
+                        ),
+                      Text(
+                        '${temp[index].rating}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      const Icon(
+                        Icons.star,
+                        color: Colors.yellow,
+                        size: 15,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            separatorBuilder: (BuildContext context, int index) =>
+                const SizedBox(
+              height: 10,
+            ),
+          );
   }
 
   // add to cart for product page
@@ -868,9 +990,15 @@ class UIUtils {
     );
   }
 
-  Future reviewItem({required Product product}) async {
-    receiptController.userRating(-1);
-    receiptController.userReview(TextEditingController());
+  // item review bottom sheet
+  Future reviewItemBottomSheet({required Product product}) async {
+    ProductReview temp = receiptController.productReviews.firstWhere((p0) =>
+        p0.customerId == receiptController.userId!.value.toString() &&
+        p0.productId.toLowerCase() == product.name.toLowerCase());
+
+    receiptController.userRating(temp.rating - 1);
+    receiptController.userReview(TextEditingController(text: temp.description));
+
     return Get.bottomSheet(
       backgroundColor: Colors.white,
       Container(

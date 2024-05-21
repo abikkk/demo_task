@@ -21,6 +21,8 @@ class Product {
     required this.brand,
     required this.gender,
     required this.added,
+    this.rating = 0,
+    this.reviews = 0,
   });
 
   late final String id;
@@ -31,6 +33,8 @@ class Product {
   late final String brand;
   late final String gender;
   late final Timestamp added;
+  late double rating;
+  late int reviews;
 
   Product.fromJson(Map<String, dynamic> json) {
     id = json['id'];

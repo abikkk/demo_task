@@ -156,8 +156,8 @@ class _FilterScreenState extends State<FilterScreen> {
                           ),
                         ),
                       ),
-                      uiUtils.brandBubbles(
-                        brand: filterController.brands[index].name,
+                      uiUtils.tipBubbles(
+                        title: filterController.brands[index].name,
                         active: true,
                         filterScreen: true,
                       ),

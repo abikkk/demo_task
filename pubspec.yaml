@@ -37,6 +37,8 @@ dependencies:
   #    misc
   flutter_slidable: # slide widget feature
   path_provider_android:
+  shimmer: ^3.0.0 # shimmer effect for loader
+
 #  fluttertoast: # toast for UI
 
 dev_dependencies:

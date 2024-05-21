@@ -1,9 +1,10 @@
 import 'package:demo_task/constants.dart';
+import 'package:demo_task/controller/receipt_controller.dart';
 import 'package:demo_task/model/product_model.dart';
+import 'package:demo_task/model/product_review_model.dart';
 import 'package:firebase_cloud_firestore/firebase_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../view/loader_helpers.dart';
 
 class ProductController extends GetxController {
   final firebase = FirebaseFirestore.instance;
@@ -18,6 +19,7 @@ class ProductController extends GetxController {
 
   Rx<Product>? currentProduct; // active product
   RxList<Product> products = <Product>[].obs; // main product list
+  RxBool productsLoaded = false.obs;
 
   @override
   void onInit() {
@@ -32,6 +34,7 @@ class ProductController extends GetxController {
   }
 
   getProducts() async {
+    productsLoaded(false);
     try {
       debugPrint('## getting products list');
 
@@ -47,6 +50,34 @@ class ProductController extends GetxController {
       debugPrint('## ERROR GETTING PRODUCTS: $e');
     } finally {
       debugPrint('## products list count: ${products.length}');
+
+      ReceiptController receiptController = Get.find<ReceiptController>();
+      await receiptController.getReceipts();
+      await receiptController.getProductReview();
+      assignRatingAndReview();
+      productsLoaded(true);
+    }
+  }
+
+  assignRatingAndReview() async {
+    ReceiptController receiptController = Get.find<ReceiptController>();
+    for (var product in products) {
+      int rating = 0, totalReviews = 0;
+      List<ProductReview> productReviews = receiptController.productReviews
+          .where(
+              (p0) => p0.productId.toLowerCase() == product.name.toLowerCase())
+          .toList();
+      totalReviews = productReviews.length;
+      if (totalReviews == 0) {
+        product.rating = rating.toDouble();
+        product.reviews = totalReviews;
+      } else {
+        for (var reviews in productReviews) {
+          rating = reviews.rating + rating;
+        }
+        product.rating = rating / totalReviews;
+        product.reviews = totalReviews;
+      }
     }
   }
 }

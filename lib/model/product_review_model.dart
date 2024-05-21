@@ -9,6 +9,7 @@ String productReviewJson(ProductReview data) => json.encode(data.toJson());
 
 class ProductReview {
   ProductReview({
+    required this.id,
     required this.code,
     required this.description,
     required this.customerId,
@@ -17,6 +18,7 @@ class ProductReview {
     required this.productId,
   });
 
+  late final String id;
   late final String code;
   late final String description;
   late final String customerId;
@@ -25,33 +27,36 @@ class ProductReview {
   late final String productId;
 
   ProductReview.fromJson(Map<String, dynamic> json) {
-    code = json['code'];
+    code = json['reviewId'];
+    id = json['reviewId'];
     description = json['description'];
-    customerId = json['customerId'];
+    customerId = json['userId'];
     rating = json['rating'];
-    addedIn = json['addedIn'];
-    productId = json['productId'];
+    addedIn = json['reviewedDate'];
+    productId = json['product'];
   }
 
   factory ProductReview.fromSnapshot(
       DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
     final docData = documentSnapshot.data()!;
     return ProductReview(
-        code: (docData['code']).toString(),
+        id: documentSnapshot.id.toString(),
+        code: (docData['reviewId']).toString(),
         description: (docData['description']).toString(),
-        customerId: (docData['customerId']).toString(),
-        rating: int.parse(docData['rating'] ?? 0),
-        addedIn: (docData['addedIn'] ?? Timestamp.now()),
-        productId: (docData['productId']).toString());
+        customerId: (docData['userId']).toString(),
+        rating: int.parse((docData['rating'] ?? 0).toString()),
+        addedIn: (docData['reviewedDate'] ?? Timestamp.now()),
+        productId: (docData['product']).toString());
   }
 
   Map<String, dynamic> toJson() {
     final productReview = <String, dynamic>{};
-    productReview['code'] = code;
+    productReview['reviewId'] = id;
+    productReview['reviewId'] = code;
     productReview['description'] = description;
-    productReview['customerId'] = customerId;
+    productReview['userId'] = customerId;
     productReview['rating'] = rating;
-    productReview['addedIn'] = addedIn;
+    productReview['reviewedDate'] = addedIn;
     productReview['productId'] = productId;
     return productReview;
   }

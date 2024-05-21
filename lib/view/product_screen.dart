@@ -1,10 +1,13 @@
 import 'package:demo_task/controller/cart_controller.dart';
 import 'package:demo_task/controller/product_controller.dart';
+import 'package:demo_task/view/product_reviews_screen.dart';
 import 'package:demo_task/view/ui_helpers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get/get_navigation/src/routes/get_transition_mixin.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({
@@ -256,9 +259,10 @@ class _ProductScreenState extends State<ProductScreen> {
                     const SizedBox(
                       width: 5,
                     ),
-                    const Text(
-                      '4.5',
-                      style: TextStyle(
+                    Text(
+                      productController.currentProduct!.value.rating
+                          .toStringAsFixed(1),
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -266,9 +270,9 @@ class _ProductScreenState extends State<ProductScreen> {
                     const SizedBox(
                       width: 5,
                     ),
-                    const Text(
-                      '(109 Reviews)',
-                      style: TextStyle(
+                    Text(
+                      '${productController.currentProduct!.value.reviews} Review(s)',
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
                         fontWeight: FontWeight.w400,
@@ -294,6 +298,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   height: 5,
                 ),
 
+                // sizing information
                 Row(
                   children: [
                     Expanded(
@@ -357,11 +362,11 @@ class _ProductScreenState extends State<ProductScreen> {
                   ],
                 ),
 
-                // product description
                 const SizedBox(
                   height: 20,
                 ),
 
+                // product description
                 const Text(
                   'Description',
                   style: TextStyle(
@@ -369,7 +374,6 @@ class _ProductScreenState extends State<ProductScreen> {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-
                 const SizedBox(
                   height: 5,
                 ),
@@ -381,18 +385,38 @@ class _ProductScreenState extends State<ProductScreen> {
                   ),
                 ),
 
-                // product review
                 const SizedBox(
                   height: 20,
                 ),
 
-                const Text(
-                  'Reviews (109)',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
+                // product review
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Reviews (${productController.currentProduct!.value.reviews})',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Get.to(() => const ProductReviewsScreen()),
+                      child: const Text(
+                        'View All',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
+                uiUtils.reviewItem()
               ],
             ),
           ),
@@ -434,7 +458,7 @@ class _ProductScreenState extends State<ProductScreen> {
                         attributeIndex: productController
                             .activeProductAttributeIndex.value);
                   } else {
-                    uiUtils.reviewItem(
+                    uiUtils.reviewItemBottomSheet(
                         product: productController.currentProduct!.value);
                   }
                 },

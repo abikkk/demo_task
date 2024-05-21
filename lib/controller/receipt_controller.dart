@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:demo_task/constants.dart';
+import 'package:demo_task/controller/product_controller.dart';
 import 'package:firebase_cloud_firestore/firebase_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,20 +16,13 @@ class ReceiptController extends GetxController {
   final firebase = FirebaseFirestore.instance;
   CartController cartController = Get.find<CartController>();
   Constants constants = Constants();
-  RxInt userRating = 0.obs;
+  RxInt userRating = 0.obs, reviewIndex = (0).obs;
   Rx<TextEditingController> userReview = TextEditingController().obs;
 
   RxList<Receipt> receipts = <Receipt>[].obs;
   Rx<Receipt>? activeReceipt;
   RxList<ProductReview> productReviews = <ProductReview>[].obs;
-
-  @override
-  void onInit() {
-    // TODO: implement onInit
-    super.onInit();
-    createNewUser();
-    getReceipts();
-  }
+  RxBool receiptsLoaded = false.obs;
 
   RxInt? userId;
 
@@ -42,6 +36,7 @@ class ReceiptController extends GetxController {
   }
 
   getReceipts() async {
+    receiptsLoaded(false);
     try {
       debugPrint('## getting receipts list');
 
@@ -58,6 +53,7 @@ class ReceiptController extends GetxController {
       debugPrint('## ERROR GETTING RECEIPTS: $e');
     } finally {
       debugPrint('## receipts list count: ${receipts.length}');
+      receiptsLoaded(true);
     }
   }
 
@@ -80,6 +76,8 @@ class ReceiptController extends GetxController {
       debugPrint('## product review list count: ${productReviews.length}');
     }
   }
+
+  filterReview() {}
 
   placeOrder() async {
     bool orderPlaced = false;
@@ -129,17 +127,39 @@ class ReceiptController extends GetxController {
     required Product product,
   }) async {
     bool reviewed = false;
+    ProductController productController = Get.find<ProductController>();
     try {
       Loaders().fullScreenLoader();
-
-      await firebase.collection(constants.review).add({
-        'userId': userId!.value.toString(),
-        'product': product.name,
-        'description': userReview.value.text.toString(),
-        'rating': userRating.value,
-        'reviewId': UniqueKey().toString(),
-        'reviewedDate': Timestamp.now()
-      });
+      String? existingId;
+      for (ProductReview review in productReviews) {
+        if (review.productId.toLowerCase() == product.name.toLowerCase() &&
+            review.customerId == userId!.value.toString()) {
+          existingId = review.id;
+          break;
+        }
+      }
+      if (existingId != null) {
+        await firebase
+            .collection(constants.review)
+            .doc(existingId.toString())
+            .update({
+          // 'userId': userId!.value.toString(),
+          // 'product': product.name,
+          'description': userReview.value.text.toString(),
+          'rating': userRating.value + 1,
+          // 'reviewId': UniqueKey().toString(),
+          'reviewedDate': Timestamp.now()
+        });
+      } else {
+        await firebase.collection(constants.review).add({
+          'userId': userId!.value.toString(),
+          'product': product.name,
+          'description': userReview.value.text.toString(),
+          'rating': userRating.value + 1,
+          'reviewId': UniqueKey().toString(),
+          'reviewedDate': Timestamp.now()
+        });
+      }
 
       reviewed = true;
     } catch (e) {
@@ -150,9 +170,11 @@ class ReceiptController extends GetxController {
       Get.back();
       activeReceipt = null;
       if (reviewed) {
+        cartController.cart.clear();
+        getProductReview();
         UIUtils().showSnackBar(
             title: "Success!", message: "Product reviewed successfully!!");
-        cartController.cart.clear();
+        productController.assignRatingAndReview();
         Get.offAll(() => const DashboardScreen());
       }
     }
