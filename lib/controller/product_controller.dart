@@ -1,79 +1,52 @@
+import 'package:demo_task/constants.dart';
 import 'package:demo_task/model/product_model.dart';
+import 'package:firebase_cloud_firestore/firebase_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../model/brand_model.dart';
+import '../view/loader_helpers.dart';
 
 class ProductController extends GetxController {
+  final firebase = FirebaseFirestore.instance;
+  Constants constants = Constants();
+
+  // UIUtils uiUtils = UIUtils();
   Rx<TextEditingController> quantityController =
       TextEditingController(text: '1').obs;
-  RxDouble tempTotalPrice = 0.0.obs, tempProductSize = 0.0.obs;
-  RxString tempProductColor = ''.obs;
+  RxDouble activeCartTotalPrice = 0.0.obs;
+  RxInt activeProductAttributeIndex = 0.obs, // active product attribute index
+      activeProductSizeIndex = 0.obs; // active product size index
 
-  Rx<Product>? currentProduct;
-  RxList<Product> products = [
-    Product(
-        code: 'code',
-        description: 'description',
-        inStock: true,
-        name: 'nike shoe',
-        price: 1200,
-        rating: 4,
-        size: [41, 42, 43],
-        colors: {
-          'black': [
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436227060_zm.jpg',
-            // 'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436221060_zm.jpg',
-            // 'https://d2ob0iztsaxy5v.cloudfront.net/product/340576/3405765950_zm.jpg'
-          ],
-          'white': [
-            // 'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436227060_zm.jpg',
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436221060_zm.jpg',
-            // 'https://d2ob0iztsaxy5v.cloudfront.net/product/340576/3405765950_zm.jpg'
-          ],
-          'grey': [
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436227060_zm.jpg',
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436221060_zm.jpg',
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/340576/3405765950_zm.jpg'
-          ]
-        },
-        brand: Brand(code: '1', name: 'Nike', logo: 'logo'),
-        reviews: []),
-    Product(
-        code: 'code',
-        description: 'description',
-        inStock: true,
-        name: 'adidas shoe',
-        price: 1200,
-        rating: 4,
-        size: [41, 42, 43],
-        colors: {
-          'black': [
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436221060_zm.jpg',
-            // 'https://d2ob0iztsaxy5v.cloudfront.net/product/342389/3423895450_zm.jpg',
-            // 'https://d2ob0iztsaxy5v.cloudfront.net/product/340140/3401407070_zm.jpg'
-          ],
-          'white': [
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436221060_zm.jpg',
-            // 'https://d2ob0iztsaxy5v.cloudfront.net/product/342389/3423895450_zm.jpg',
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/340140/3401407070_zm.jpg'
-          ],
-          'grey': [
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/343622/3436221060_zm.jpg',
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/342389/3423895450_zm.jpg',
-            'https://d2ob0iztsaxy5v.cloudfront.net/product/340140/3401407070_zm.jpg'
-          ]
-        },
-        brand: Brand(code: '2', name: 'Adidas', logo: 'logo'),
-        reviews: []),
-  ].obs;
+  Rx<Product>? currentProduct; // active product
+  RxList<Product> products = <Product>[].obs; // main product list
+
+  @override
+  void onInit() {
+    getProducts();
+    super.onInit();
+  }
 
   setCurrentProduct({required Product product}) {
     currentProduct = product.obs;
-    tempProductColor(product.colors.keys.first);
-    tempProductSize(product.size.first.toDouble());
+    activeProductAttributeIndex(0);
+    activeProductSizeIndex(product.attribute.first.size.first);
+  }
 
-    debugPrint(
-        '>> set size: ${tempProductSize.value} || set color: ${tempProductColor.value}');
+  getProducts() async {
+    try {
+      debugPrint('## getting products list');
+
+      final snapShot = await firebase.collection(constants.products).get();
+      // for (var element in snapShot.docs) {
+      //   debugPrint(element.data().toString().replaceAll(', ', '\n'));
+      // }
+
+      products(snapShot.docs.map((e) => Product.fromSnapShot(e)).toList());
+    } catch (e) {
+      // uiUtils.showSnackBar(
+      //     title: 'Error', message: 'Error getting products.', isError: true);
+      debugPrint('## ERROR GETTING PRODUCTS: $e');
+    } finally {
+      debugPrint('## products list count: ${products.length}');
+    }
   }
 }

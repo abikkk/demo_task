@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:demo_task/model/product_review_model.dart';
+import 'package:demo_task/model/proruct_attribute_model.dart';
+import 'package:firebase_cloud_firestore/firebase_cloud_firestore.dart';
+import 'package:get/get.dart';
 
 import 'brand_model.dart';
 
@@ -10,54 +13,62 @@ String productJson(Product data) => json.encode(data.toJson());
 
 class Product {
   Product({
-    required this.code,
+    required this.id,
     required this.description,
     required this.name,
     required this.price,
-    required this.rating,
-    required this.size,
-    required this.colors,
+    required this.attribute,
     required this.brand,
-    required this.reviews,
-    required this.inStock,
+    required this.gender,
+    required this.added,
   });
 
-  late final String code;
+  late final String id;
   late final String description;
   late final String name;
   late final double price;
-  late final int rating;
-  late final List<double> size;
-  late final Map<String, List<String>> colors;
-  late final Brand brand;
-  late final List<ProductReview>? reviews;
-  late final bool inStock;
+  late final List<ProductAttribute> attribute;
+  late final String brand;
+  late final String gender;
+  late final Timestamp added;
 
   Product.fromJson(Map<String, dynamic> json) {
-    code = json['id'];
+    id = json['id'];
     description = json['description'];
     name = json['name'];
     price = json['price'];
-    rating = json['rating'];
-    size = json['size'];
-    colors = json['colors'];
+    attribute = List<ProductAttribute>.from(json['attribute']);
     brand = json['brand'];
-    reviews = json['reviews'];
-    inStock = json['inStock'];
+    gender = json['gender'];
+    added = json['added'];
+  }
+
+  factory Product.fromSnapShot(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final docData = doc.data()!;
+
+    return Product(
+        id: doc.id,
+        description: (docData['description'] ?? '').toString(),
+        name: (docData['name'] ?? '').toString(),
+        price: double.parse((docData['price'] ?? 0.0).toString()),
+        attribute: (docData['attribute'] as List<dynamic>)
+            .map((e) => ProductAttribute.fromJson(e))
+            .toList(),
+        brand: (docData['brand'] ?? '').toString(),
+        added: (docData['added'] ?? Timestamp.now()),
+        gender: (docData['gender'] ?? '').toString());
   }
 
   Map<String, dynamic> toJson() {
     final product = <String, dynamic>{};
-    product['id'] = code;
     product['description'] = description;
     product['name'] = name;
     product['price'] = price;
-    product['rating'] = rating;
-    product['size'] = size;
-    product['colors'] = colors;
+    product['attribute'] = attribute.map((e) => e.toJson()).toList();
     product['brand'] = brand;
-    product['reviews'] = reviews;
-    product['inStock'] = inStock;
+    product['gender'] = gender;
+    product['added'] = added;
+
     return product;
   }
 }

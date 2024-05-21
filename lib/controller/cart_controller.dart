@@ -1,51 +1,67 @@
+import 'dart:math';
+
 import 'package:demo_task/model/cart_item_model.dart';
 import 'package:demo_task/model/product_model.dart';
+import 'package:firebase_cloud_firestore/firebase_cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:demo_task/model/order_model.dart';
+import '../constants.dart';
 
 class CartController extends GetxController {
+  final firebase = FirebaseFirestore.instance;
+
   RxList<CartItem> cart = <CartItem>[].obs;
-  RxDouble total = 0.0.obs;
+  RxDouble total = 0.0.obs, totalShipping = 20.0.obs;
+
+  Constants constants = Constants();
 
   getTotal() {
     total(0.0);
+    totalShipping(0);
     for (var cartItem in cart) {
-      total(total.value + (cartItem.product.price * cartItem.quantity));
+      total(total.value + (cartItem.price * cartItem.quantity));
+      totalShipping(totalShipping.value + 20);
     }
   }
 
-  addToCart(
-      {required Product item,
-      required int quantity,
-      required double size,
-      required String color}) {
+  addToCart({
+    required Product item,
+    required int quantity,
+    required int size,
+    required int attributeIndex,
+  }) {
     if (cart.isEmpty) {
       cart.add(CartItem(
-          product: item,
-          addedIn: DateTime.now(),
-          quantity: quantity,
-          // price: item.price,
-          image: item.colors.values.first.first,
-          size: size,
-          color: color));
+        product: item.name,
+        brand: item.brand,
+        price: item.price,
+        addedIn: Timestamp.now(),
+        quantity: quantity,
+        image: item.attribute[attributeIndex].image.first,
+        size: size,
+        color: item.attribute[attributeIndex].color,
+      ));
     } else {
       bool isNew = true;
       for (var cartItem in cart) {
-        if (cartItem.product == item &&
+        if (cartItem.product == item.name &&
             size == cartItem.size &&
-            color == cartItem.color) {
+            item.attribute[attributeIndex].color == cartItem.color) {
           isNew = false;
           break;
         }
       }
       if (isNew) {
         cart.add(CartItem(
-            product: item,
-            addedIn: DateTime.now(),
+            product: item.name,
+            brand: item.brand,
+            price: item.price,
+            addedIn: Timestamp.now(),
             quantity: quantity,
-            // price: item.price,
-            image: item.colors.values.first.first,
+            image: item.attribute.first.image.first,
             size: size,
-            color: color));
+            color: item.attribute[attributeIndex].color));
       }
     }
   }
@@ -53,6 +69,7 @@ class CartController extends GetxController {
   removeFromCart({required CartItem item}) {
     if (cart.isNotEmpty) {
       cart.remove(item);
+      getTotal();
     }
   }
 

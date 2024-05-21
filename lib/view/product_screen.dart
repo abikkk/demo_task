@@ -7,7 +7,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class ProductScreen extends StatefulWidget {
-  const ProductScreen({super.key});
+  const ProductScreen({
+    super.key,
+    this.fromDashboard = true,
+  });
+
+  final bool fromDashboard;
 
   @override
   State<ProductScreen> createState() => _ProductScreenState();
@@ -18,7 +23,7 @@ class _ProductScreenState extends State<ProductScreen> {
   CartController cartController = Get.find<CartController>();
   UIUtils uiUtils = UIUtils();
 
-  int picIndex = 0, sizeIndex = 0, colorIndex = 0;
+  int picIndex = 0, sizeIndex = 0, attributeIndex = 0;
 
   @override
   void initState() {
@@ -33,7 +38,8 @@ class _ProductScreenState extends State<ProductScreen> {
   Widget build(BuildContext context) {
     return Obx(
       () => Scaffold(
-        appBar: uiUtils.customAppBar(title: ''),
+        appBar:
+            uiUtils.customAppBar(title: '', showAction: widget.fromDashboard),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: SingleChildScrollView(
@@ -51,7 +57,9 @@ class _ProductScreenState extends State<ProductScreen> {
                           itemCount: productController
                               .currentProduct!
                               .value
-                              .colors[productController.tempProductColor.value]!
+                              .attribute[productController
+                                  .activeProductAttributeIndex.value]
+                              .image
                               .length,
                           pageSnapping: true,
                           onPageChanged: (page) {
@@ -65,9 +73,11 @@ class _ProductScreenState extends State<ProductScreen> {
                                 borderRadius: BorderRadius.circular(20),
                                 child: uiUtils.cachedImage(
                                     url: productController
-                                            .currentProduct!.value.colors[
-                                        productController
-                                            .tempProductColor.value]![index]),
+                                        .currentProduct!
+                                        .value
+                                        .attribute[productController
+                                            .activeProductAttributeIndex.value]
+                                        .image[index]),
                               ),
                             );
                           },
@@ -90,8 +100,9 @@ class _ProductScreenState extends State<ProductScreen> {
                                     itemCount: productController
                                         .currentProduct!
                                         .value
-                                        .colors[productController
-                                            .tempProductColor.value]!
+                                        .attribute[productController
+                                            .activeProductAttributeIndex.value]
+                                        .image
                                         .length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
@@ -122,25 +133,23 @@ class _ProductScreenState extends State<ProductScreen> {
                                           itemCount: productController
                                               .currentProduct!
                                               .value
-                                              .colors
+                                              .attribute
                                               .length,
                                           itemBuilder: (BuildContext context,
                                               int index) {
                                             List colorKeys = productController
-                                                .currentProduct!
-                                                .value
-                                                .colors
-                                                .keys
+                                                .currentProduct!.value.attribute
+                                                .map((e) => e.color)
                                                 .toList();
 
                                             return GestureDetector(
                                               onTap: () {
                                                 setState(() {
-                                                  colorIndex = index;
+                                                  attributeIndex = index;
                                                 });
                                                 productController
-                                                    .tempProductColor(
-                                                        colorKeys[index]);
+                                                    .activeProductAttributeIndex(
+                                                        attributeIndex);
                                                 picIndex = 0;
                                               },
                                               child: Container(
@@ -149,7 +158,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                   decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                          color: (colorIndex ==
+                                                          color: (attributeIndex ==
                                                                   index)
                                                               ? Colors.grey
                                                               : Colors
@@ -234,8 +243,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
-                        itemCount:
-                            productController.currentProduct!.value.rating,
+                        itemCount: 4,
                         itemBuilder: (BuildContext context, int index) {
                           return const Icon(
                             Icons.star,
@@ -248,9 +256,9 @@ class _ProductScreenState extends State<ProductScreen> {
                     const SizedBox(
                       width: 5,
                     ),
-                    Text(
-                      '${productController.currentProduct!.value.rating.toDouble()}',
-                      style: const TextStyle(
+                    const Text(
+                      '4.5',
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -295,13 +303,22 @@ class _ProductScreenState extends State<ProductScreen> {
                           scrollDirection: Axis.horizontal,
                           shrinkWrap: true,
                           itemCount: productController
-                              .currentProduct!.value.size.length,
+                              .currentProduct!
+                              .value
+                              .attribute[productController
+                                  .activeProductAttributeIndex.value]
+                              .size
+                              .length,
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
-                                productController.tempProductSize(
+                                productController.activeProductSizeIndex(
                                     productController
-                                        .currentProduct!.value.size[index]);
+                                        .currentProduct!
+                                        .value
+                                        .attribute[productController
+                                            .activeProductAttributeIndex.value]
+                                        .size[index]);
                                 setState(() {
                                   sizeIndex = index;
                                 });
@@ -317,7 +334,11 @@ class _ProductScreenState extends State<ProductScreen> {
                                 child: Center(
                                   child: Text(
                                     productController
-                                        .currentProduct!.value.size[index]
+                                        .currentProduct!
+                                        .value
+                                        .attribute[productController
+                                            .activeProductAttributeIndex.value]
+                                        .size[index]
                                         .toString(),
                                     style: TextStyle(
                                         fontSize: 12,
@@ -383,31 +404,39 @@ class _ProductScreenState extends State<ProductScreen> {
           child: Row(
             children: [
               Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Price',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    Text(
-                      '\$${productController.currentProduct!.value.price.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
+                child: (widget.fromDashboard)
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Price',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            '\$${productController.currentProduct!.value.price.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
               ),
               GestureDetector(
                 onTap: () async {
-                  uiUtils.addToCart(
-                      product: productController.currentProduct!.value,
-                      size: productController.tempProductSize.value,
-                      color: productController.tempProductColor.value);
+                  if (widget.fromDashboard) {
+                    uiUtils.addToCart(
+                        product: productController.currentProduct!.value,
+                        size: productController.activeProductSizeIndex.value,
+                        attributeIndex: productController
+                            .activeProductAttributeIndex.value);
+                  } else {
+                    uiUtils.reviewItem(
+                        product: productController.currentProduct!.value);
+                  }
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -416,10 +445,10 @@ class _ProductScreenState extends State<ProductScreen> {
                   ),
                   height: 50,
                   width: 160,
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      'ADD TO CART',
-                      style: TextStyle(fontSize: 14, color: Colors.white),
+                      (!widget.fromDashboard) ? 'REVIEW' : 'ADD TO CART',
+                      style: const TextStyle(fontSize: 14, color: Colors.white),
                     ),
                   ),
                 ),

@@ -17,6 +17,7 @@ dependencies:
   #  firebase
   firebase_core:
   firebase_storage: ^11.7.5
+  firebase_cloud_firestore:
 
   #  state management
   get:
@@ -27,10 +28,16 @@ dependencies:
   #    device
   flutter_screenutil:
 
+  # google font
+  google_fonts: ^6.2.1
+
+  # slider
+  syncfusion_flutter_sliders: ^25.2.4
+
   #    misc
   flutter_slidable: # slide widget feature
   path_provider_android:
-  fluttertoast: # toast for UI
+#  fluttertoast: # toast for UI
 
 dev_dependencies:
   flutter_test:

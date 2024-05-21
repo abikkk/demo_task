@@ -1,3 +1,4 @@
+import 'package:demo_task/view/checkout_screen.dart';
 import 'package:demo_task/view/ui_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,7 +30,10 @@ class _CartScreenState extends State<CartScreen> {
     return Obx(
       () => Scaffold(
         appBar: uiUtils.customAppBar(
-            title: 'Cart', centerTitled: true, showAction: false),
+            title: 'Cart',
+            centerTitled: true,
+            showAction: true,
+            showCart: false),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -79,18 +83,29 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               ),
               GestureDetector(
-                onTap: () async {},
+                onTap: () {
+                  if (cartController.cart.isNotEmpty) {
+                    cartController.getTotal();
+                    Get.to(() => const CheckOutScreen());
+                  }
+                },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: (cartController.cart.isNotEmpty)
+                        ? Colors.black
+                        : Colors.grey,
                     borderRadius: BorderRadius.circular(25),
                   ),
                   height: 50,
                   width: 160,
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'CHECK OUT',
-                      style: TextStyle(fontSize: 14, color: Colors.white),
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: (cartController.cart.isNotEmpty)
+                              ? Colors.white
+                              : Colors.black45),
                     ),
                   ),
                 ),

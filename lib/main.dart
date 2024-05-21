@@ -3,6 +3,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'controller/cart_controller.dart';
+import 'controller/filter_controller.dart';
+import 'controller/product_controller.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -10,6 +14,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -27,6 +32,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
+          fontFamily: GoogleFonts.montserrat().fontFamily,
         ),
         home: const DashboardScreen(),
       ),
