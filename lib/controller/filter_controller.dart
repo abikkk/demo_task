@@ -32,12 +32,15 @@ class FilterController extends GetxController {
 
   getBrands() async {
     try {
-      debugPrint('## getting brands list');
+      // debugPrint('## getting brands list');
 
       final snapShot = await firebase.collection(constants.brands).get();
       // for (var element in snapShot.docs) {
       //   debugPrint(element.data().toString().replaceAll(', ', '\n'));
       // }
+      if (snapShot.docs.isEmpty) {
+        throw 'Could not get ${constants.brands} collection';
+      }
 
       brands(snapShot.docs.map((e) => Brand.fromSnapShot(e)).toList());
       brands.sort((a, b) => a.name.compareTo(b.name));

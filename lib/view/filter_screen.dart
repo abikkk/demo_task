@@ -3,8 +3,6 @@ import 'package:demo_task/view/ui_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
-import 'package:syncfusion_flutter_sliders/sliders.dart';
 import '../controller/product_controller.dart';
 
 class FilterScreen extends StatefulWidget {

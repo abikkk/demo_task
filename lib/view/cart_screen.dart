@@ -37,13 +37,13 @@ class _CartScreenState extends State<CartScreen> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              (cartController.cart.isEmpty)
+              (cartController.activeCart.isEmpty)
                   ? const Center(
                       child: Text('Empty cart!'),
                     )
                   : ListView.separated(
                       shrinkWrap: true,
-                      itemCount: cartController.cart.length,
+                      itemCount: cartController.activeCart.length,
                       itemBuilder: (BuildContext context, int index) {
                         return uiUtils.cartItem(index: index);
                       },
@@ -75,7 +75,7 @@ class _CartScreenState extends State<CartScreen> {
                       height: 5,
                     ),
                     Text(
-                      '\$${cartController.total.value.toStringAsFixed(2)}',
+                      '\$${cartController.activeCartTotal.value.toStringAsFixed(2)}',
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w700),
                     ),
@@ -84,14 +84,14 @@ class _CartScreenState extends State<CartScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  if (cartController.cart.isNotEmpty) {
+                  if (cartController.activeCart.isNotEmpty) {
                     cartController.getTotal();
                     Get.to(() => const CheckOutScreen());
                   }
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: (cartController.cart.isNotEmpty)
+                    color: (cartController.activeCart.isNotEmpty)
                         ? Colors.black
                         : Colors.grey,
                     borderRadius: BorderRadius.circular(25),
@@ -103,7 +103,7 @@ class _CartScreenState extends State<CartScreen> {
                       'CHECK OUT',
                       style: TextStyle(
                           fontSize: 14,
-                          color: (cartController.cart.isNotEmpty)
+                          color: (cartController.activeCart.isNotEmpty)
                               ? Colors.white
                               : Colors.black45),
                     ),

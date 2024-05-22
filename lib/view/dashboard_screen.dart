@@ -1,3 +1,4 @@
+import 'package:demo_task/constants.dart';
 import 'package:demo_task/controller/cart_controller.dart';
 import 'package:demo_task/controller/filter_controller.dart';
 import 'package:demo_task/controller/product_controller.dart';
@@ -14,6 +15,7 @@ import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../model/product_review_model.dart';
+import '../storage_helper.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -23,6 +25,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  StorageHelper storageHelper = StorageHelper(); // storage helper
   CartController cartController = Get.put(CartController(), permanent: true);
   ProductController productController =
       Get.put(ProductController(), permanent: true);
@@ -33,12 +36,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   UIUtils uiUtils = UIUtils();
   Loaders loaders = Loaders();
+  Constants constants = Constants();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    if (receiptController.userId == null) receiptController.createNewUser();
+    setUser();
+  }
+
+  setUser() async {
+    if ((await storageHelper.get(key: constants.user)).toString() == '') {
+      receiptController.createNewUser();
+    } else {
+      receiptController.createNewUser(user: int.parse(
+          (await storageHelper.get(key: constants.user)).toString()));
+      // receiptController.createNewUser();
+      debugPrint(
+          '## current user ID: ${await storageHelper.get(key: constants.user)}');
+    }
   }
 
   @override
@@ -47,6 +63,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: uiUtils.customAppBar(title: 'Discover'),
       body: RefreshIndicator(
         onRefresh: () async {
+          filterController.resetFilters();
           productController.onInit();
           receiptController.onInit();
         },

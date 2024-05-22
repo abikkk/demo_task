@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import '../model/order_model.dart';
 import '../model/product_model.dart';
 import '../model/product_review_model.dart';
+import '../storage_helper.dart';
 import '../view/dashboard_screen.dart';
 import '../view/loader_helpers.dart';
 import '../view/ui_helpers.dart';
@@ -15,24 +16,30 @@ import 'cart_controller.dart';
 class ReceiptController extends GetxController {
   final firebase = FirebaseFirestore.instance;
   CartController cartController = Get.find<CartController>();
-  Constants constants = Constants();
+  Constants constants = Constants(); // constants
+  StorageHelper storageHelper = StorageHelper(); // storage helper
+
   RxInt userRating = 0.obs, reviewIndex = (0).obs;
   Rx<TextEditingController> userReview = TextEditingController().obs;
-
   RxList<Receipt> receipts = <Receipt>[].obs;
   Rx<Receipt>? activeReceipt;
   RxList<ProductReview> productReviews = <ProductReview>[].obs;
   RxBool receiptsLoaded = false.obs;
 
-  RxInt? userId;
-
   createNewUser({int? user}) {
+    RxInt? _userId;
     if (user == null) {
-      userId = 0.obs;
-      userId!(Constants().userId[Random().nextInt(Constants().userId.length)]);
+      _userId = 0.obs;
+      _userId(Constants().userId[Random().nextInt(Constants().userId.length)]);
     } else {
-      userId!(user);
+      _userId = (user).obs;
     }
+
+    // debugPrint(_userId.value.toString());
+    storageHelper.store(key: constants.user, value: _userId.value.toString());
+
+    cartController.getCartDetail();
+    getReceipts();
   }
 
   getReceipts() async {
@@ -42,15 +49,20 @@ class ReceiptController extends GetxController {
 
       final snapShot = await firebase
           .collection(constants.receipts)
-          .doc(userId!.value.toString())
+          .doc((await storageHelper.get(key: constants.user)).toString())
           .collection(constants.receipts)
           .get();
+
+      if (snapShot.docs.isEmpty) {
+        throw 'Could not get ${constants.receipts} collection';
+      }
 
       receipts(snapShot.docs.map((e) => Receipt.fromSnapshot(e)).toList());
     } catch (e) {
       // uiUtils.showSnackBar(
       //     title: 'Error', message: 'Error getting products.', isError: true);
       debugPrint('## ERROR GETTING RECEIPTS: $e');
+      receipts.clear();
     } finally {
       debugPrint('## receipts list count: ${receipts.length}');
       receiptsLoaded(true);
@@ -59,12 +71,16 @@ class ReceiptController extends GetxController {
 
   getProductReview() async {
     try {
-      debugPrint('## getting product reviews');
+      // debugPrint('## getting product reviews');
 
       final snapShot = await firebase.collection(constants.review).get();
       // for (var element in snapShot.docs) {
       //   debugPrint(element.data().toString().replaceAll(', ', '\n'));
       // }
+
+      if (snapShot.docs.isEmpty) {
+        throw 'Could not get ${constants.review} collection';
+      }
 
       productReviews(
           snapShot.docs.map((e) => ProductReview.fromSnapshot(e)).toList());
@@ -84,22 +100,22 @@ class ReceiptController extends GetxController {
     try {
       Loaders().fullScreenLoader();
       activeReceipt = Receipt(
-              code: userId!.value.toString(),
-              cart: cartController.cart.toList(),
+              code: (await storageHelper.get(key: constants.user)).toString(),
+              cart: cartController.activeCart.toList(),
               placedIn: Timestamp.now(),
-              totalPrice: cartController.total.value,
-              shippingPrice: cartController.totalShipping.value,
+              totalPrice: cartController.activeCartTotal.value,
+              shippingPrice: cartController.activeTotalShipping.value,
               address: '',
               paymentMethod: '')
           .obs;
 
       await firebase
           .collection(constants.receipts)
-          .doc(userId!.value.toString())
+          .doc((await storageHelper.get(key: constants.user)).toString())
           .collection(constants.receipts)
           .add({
         'code': activeReceipt!.value.code,
-        'cart': cartController.cart.toList().map((e) => e.toJson()),
+        'cart': cartController.activeCart.toList().map((e) => e.toJson()),
         'placedIn': activeReceipt!.value.placedIn,
         'totalPrice': activeReceipt!.value.totalPrice,
         'shippingPrice': activeReceipt!.value.shippingPrice,
@@ -115,9 +131,8 @@ class ReceiptController extends GetxController {
       Get.back();
       activeReceipt = null;
       if (orderPlaced) {
-        UIUtils().showSnackBar(
-            title: "Success!", message: "Order placed successfully!!");
-        cartController.cart.clear();
+        UIUtils().showSnackBar(title: "Success!", message: "Order confirmed!");
+        cartController.submitCart(closeCart: true);
         Get.offAll(() => const DashboardScreen());
       }
     }
@@ -133,7 +148,8 @@ class ReceiptController extends GetxController {
       String? existingId;
       for (ProductReview review in productReviews) {
         if (review.productId.toLowerCase() == product.name.toLowerCase() &&
-            review.customerId == userId!.value.toString()) {
+            review.customerId ==
+                (await storageHelper.get(key: constants.user)).toString()) {
           existingId = review.id;
           break;
         }
@@ -143,7 +159,7 @@ class ReceiptController extends GetxController {
             .collection(constants.review)
             .doc(existingId.toString())
             .update({
-          // 'userId': userId!.value.toString(),
+          // '_userId': _userId!.value.toString(),
           // 'product': product.name,
           'description': userReview.value.text.toString(),
           'rating': userRating.value + 1,
@@ -152,7 +168,7 @@ class ReceiptController extends GetxController {
         });
       } else {
         await firebase.collection(constants.review).add({
-          'userId': userId!.value.toString(),
+          '_userId': (await storageHelper.get(key: constants.user)).toString(),
           'product': product.name,
           'description': userReview.value.text.toString(),
           'rating': userRating.value + 1,
@@ -170,7 +186,7 @@ class ReceiptController extends GetxController {
       Get.back();
       activeReceipt = null;
       if (reviewed) {
-        cartController.cart.clear();
+        cartController.activeCart.clear();
         getProductReview();
         UIUtils().showSnackBar(
             title: "Success!", message: "Product reviewed successfully!!");

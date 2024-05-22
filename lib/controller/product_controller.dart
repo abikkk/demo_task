@@ -36,12 +36,15 @@ class ProductController extends GetxController {
   getProducts() async {
     productsLoaded(false);
     try {
-      debugPrint('## getting products list');
+      // debugPrint('## getting products list');
 
       final snapShot = await firebase.collection(constants.products).get();
       // for (var element in snapShot.docs) {
       //   debugPrint(element.data().toString().replaceAll(', ', '\n'));
       // }
+      if (snapShot.docs.isEmpty) {
+        throw 'Could not get ${constants.products} collection';
+      }
 
       products(snapShot.docs.map((e) => Product.fromSnapShot(e)).toList());
     } catch (e) {
@@ -52,7 +55,7 @@ class ProductController extends GetxController {
       debugPrint('## products list count: ${products.length}');
 
       ReceiptController receiptController = Get.find<ReceiptController>();
-      await receiptController.getReceipts();
+      // await receiptController.getReceipts();
       await receiptController.getProductReview();
       assignRatingAndReview();
       productsLoaded(true);

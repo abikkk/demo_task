@@ -27,7 +27,8 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: uiUtils.customAppBar(title: 'Receipts', showAction: false),
+        appBar: uiUtils.customAppBar(
+            title: 'Receipts', showAction: false, centerTitled: true),
         body: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Obx(
@@ -55,10 +56,11 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                   uiUtils.receiptItem(index: index),
                               separatorBuilder:
                                   (BuildContext context, int index) =>
-                                      const SizedBox(
-                                height: 10,
-                              ),
-                            )
+                                      const Divider(
+                                        height: 30,
+                                        indent: 10,
+                                        endIndent: 10,
+                                      ))
                 ],
               ),
             ),

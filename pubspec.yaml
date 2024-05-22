@@ -32,14 +32,13 @@ dependencies:
   google_fonts: ^6.2.1
 
   # slider
-  syncfusion_flutter_sliders: ^25.2.4
   flutter_xlider: ^3.5.0 # range slide
-
 
   #    misc
   flutter_slidable: # slide widget feature
   path_provider_android:
   shimmer: ^3.0.0 # shimmer effect for loader
+  flutter_secure_storage: ^9.2.2 # secure storage for local storage
 
 #  fluttertoast: # toast for UI
 

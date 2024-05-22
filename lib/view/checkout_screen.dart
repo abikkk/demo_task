@@ -84,7 +84,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                     height: 5,
                   ),
                   Text(
-                    '\$${(cartController.totalShipping.value + cartController.total.value).toStringAsFixed(2)}',
+                    '\$${(cartController.activeTotalShipping.value + cartController.activeCartTotal.value).toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.w700),
                   ),
@@ -180,13 +180,13 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
       child: Obx(
         () => ListView.separated(
           shrinkWrap: true,
-          itemCount: cartController.cart.length,
+          itemCount: cartController.activeCart.length,
           itemBuilder: (BuildContext context, int index) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  cartController.cart[index].product.capitalize!,
+                  cartController.activeCart[index].product.capitalize!,
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w700),
                 ),
@@ -197,13 +197,13 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        '${cartController.cart[index].brand} . ${cartController.cart[index].color} . ${cartController.cart[index].size.toStringAsFixed(1)} . Qty ${cartController.cart[index].quantity}',
+                        '${cartController.activeCart[index].brand} . ${cartController.activeCart[index].color} . ${cartController.activeCart[index].size.toStringAsFixed(1)} . Qty ${cartController.activeCart[index].quantity}',
                         style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w400),
                       ),
                     ),
                     Text(
-                      '\$${(cartController.cart[index].price * cartController.cart[index].quantity).toStringAsFixed(2)}',
+                      '\$${(cartController.activeCart[index].price * cartController.activeCart[index].quantity).toStringAsFixed(2)}',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w700),
                     ),
@@ -235,7 +235,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
               ),
             ),
             Text(
-              '\$${(cartController.total.value).toStringAsFixed(2)}',
+              '\$${(cartController.activeCartTotal.value).toStringAsFixed(2)}',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
           ],
@@ -257,7 +257,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
               ),
             ),
             Text(
-              '\$${(cartController.totalShipping.value).toStringAsFixed(2)}',
+              '\$${(cartController.activeTotalShipping.value).toStringAsFixed(2)}',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
           ],
@@ -279,7 +279,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
               ),
             ),
             Text(
-              '\$${(cartController.totalShipping.value + cartController.total.value).toStringAsFixed(2)}',
+              '\$${(cartController.activeTotalShipping.value + cartController.activeCartTotal.value).toStringAsFixed(2)}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ],

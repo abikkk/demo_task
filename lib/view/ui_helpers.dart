@@ -20,6 +20,7 @@ import 'package:get/get_state_manager/get_state_manager.dart';
 import '../controller/cart_controller.dart';
 import '../controller/product_controller.dart';
 import '../model/brand_model.dart';
+import '../storage_helper.dart';
 
 class UIUtils {
   ProductController productController = Get.find<ProductController>();
@@ -27,6 +28,7 @@ class UIUtils {
   FilterController filterController = Get.find<FilterController>();
   ReceiptController receiptController = Get.find<ReceiptController>();
   Loaders loaders = Loaders();
+  StorageHelper storageHelper = StorageHelper(); // storage helper
 
   // app bar
   AppBar customAppBar({
@@ -61,7 +63,8 @@ class UIUtils {
     );
   }
 
-  Future selectUser() {
+  Future selectUser() async {
+    String userId = (await storageHelper.get(key: Constants().user)).toString();
     return Get.bottomSheet(
         backgroundColor: Colors.white,
         Container(
@@ -117,8 +120,7 @@ class UIUtils {
                       Get.back();
                       showSnackBar(
                           title: 'User changed!',
-                          message:
-                              'Current user: ${receiptController.userId!.value}');
+                          message: 'Current user: $userId');
                     },
                     child: Row(
                       children: [
@@ -130,8 +132,7 @@ class UIUtils {
                             fontWeight: FontWeight.w700,
                           ),
                         )),
-                        (Constants().userId[index] ==
-                                receiptController.userId!.value)
+                        (Constants().userId[index] == userId)
                             ? const Icon(Icons.check)
                             : const SizedBox.shrink()
                       ],
@@ -312,8 +313,8 @@ class UIUtils {
           SlidableAction(
             borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
-            onPressed: (val) =>
-                cartController.removeFromCart(item: cartController.cart[index]),
+            onPressed: (val) => cartController.removeFromCart(
+                item: cartController.activeCart[index]),
             backgroundColor: Colors.red.shade300,
             foregroundColor: Colors.white,
             icon: Icons.delete_sharp,
@@ -332,7 +333,7 @@ class UIUtils {
                   child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: cachedImage(
-                          url: cartController.cart[index].image,
+                          url: cartController.activeCart[index].image,
                           contain: false)),
                 ),
               ),
@@ -350,7 +351,7 @@ class UIUtils {
                           child: Text(
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
-                            cartController.cart[index].product
+                            cartController.activeCart[index].product
                                 .toString()
                                 .capitalize!,
                             style: const TextStyle(
@@ -369,7 +370,7 @@ class UIUtils {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          '${cartController.cart[index].brand.toString().capitalize} . ${cartController.cart[index].color.capitalize} . ${cartController.cart[index].size}',
+                          '${cartController.activeCart[index].brand.toString().capitalize} . ${cartController.activeCart[index].color.capitalize} . ${cartController.activeCart[index].size}',
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ],
@@ -381,38 +382,42 @@ class UIUtils {
                       children: [
                         Expanded(
                           child: Text(
-                            '\$${cartController.cart[index].price.toStringAsFixed(2)}',
+                            '\$${cartController.activeCart[index].price.toStringAsFixed(2)}',
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => (cartController.cart[index].quantity < 2)
-                              ? {}
-                              : cartController.updateCartItem(
-                                  index: index, add: false),
+                          onTap: () =>
+                              (cartController.activeCart[index].quantity < 2)
+                                  ? {}
+                                  : cartController.updateCartItem(
+                                      index: index, add: false),
                           child: Container(
                             decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color:
-                                        (cartController.cart[index].quantity <
-                                                2)
-                                            ? Colors.grey
-                                            : Colors.black)),
+                                    color: (cartController
+                                                .activeCart[index].quantity <
+                                            2)
+                                        ? Colors.grey
+                                        : Colors.black)),
                             padding: const EdgeInsets.all(1),
                             margin: const EdgeInsets.symmetric(horizontal: 10),
                             child: Icon(
                               Icons.remove,
                               size: 18,
-                              color: (cartController.cart[index].quantity < 2)
-                                  ? Colors.grey
-                                  : Colors.black,
+                              color:
+                                  (cartController.activeCart[index].quantity <
+                                          2)
+                                      ? Colors.grey
+                                      : Colors.black,
                             ),
                           ),
                         ),
                         Obx(
                           () => Text(
-                            cartController.cart[index].quantity.toString(),
+                            cartController.activeCart[index].quantity
+                                .toString(),
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),
@@ -449,26 +454,12 @@ class UIUtils {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                receiptController.receipts[index].code,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-            ),
-            Text(
-              '\$${(receiptController.receipts[index].totalPrice + receiptController.receipts[index].shippingPrice).toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
-            ),
-          ],
+        Text(
+          receiptController.receipts[index].code,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         const SizedBox(
-          height: 5,
+          height: 10,
         ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,7 +471,7 @@ class UIUtils {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (BuildContext context, int cartIndex) => SizedBox(
-                  height: 50,
+                  height: 80,
                   child: GestureDetector(
                     onTap: () {
                       if (productController.products.indexWhere((element) =>
@@ -512,19 +503,50 @@ class UIUtils {
                             title: '', message: 'Item no longer found!');
                       }
                     },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(receiptController
-                            .receipts[index].cart[cartIndex].product),
-                        Row(
-                          children: [
-                            Text(
-                              '${receiptController.receipts[index].cart[cartIndex].brand} . ${receiptController.receipts[index].cart[cartIndex].color} . ${receiptController.receipts[index].cart[cartIndex].size.toStringAsFixed(1)} .  (x${receiptController.receipts[index].cart[cartIndex].quantity})',
-                              style: const TextStyle(
-                                  color: Colors.grey, fontSize: 12),
-                            ),
-                          ],
+                        Expanded(
+                          flex: 3,
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: cachedImage(
+                                  url: receiptController
+                                      .receipts[index].cart[cartIndex].image,
+                                  contain: false)),
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Expanded(
+                          flex: 6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      receiptController.receipts[index]
+                                          .cart[cartIndex].product,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    '${receiptController.receipts[index].cart[cartIndex].brand} . ${receiptController.receipts[index].cart[cartIndex].color} . ${receiptController.receipts[index].cart[cartIndex].size.toStringAsFixed(1)} .  (x${receiptController.receipts[index].cart[cartIndex].quantity})',
+                                    style: const TextStyle(
+                                        color: Colors.grey, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -536,23 +558,51 @@ class UIUtils {
                 ),
               ),
             ),
-            // cart item price
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+          ],
+        ),
+
+        const SizedBox(
+          height: 10,
+        ),
+
+        // cart item price
+        Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text('Total: '),
+                Text(
+                  '\$${(receiptController.receipts[index].totalPrice + receiptController.receipts[index].shippingPrice).toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
                   '(${receiptController.receipts[index].totalPrice} + ${receiptController.receipts[index].shippingPrice})',
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text('Placed in: '),
                 Text(DateTime.fromMillisecondsSinceEpoch(receiptController
                         .receipts[index].placedIn.millisecondsSinceEpoch)
                     .toString()
                     .split(' ')
                     .first),
               ],
-            )
+            ),
           ],
-        ),
+        )
       ],
     );
   }
@@ -820,23 +870,27 @@ class UIUtils {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         Get.back();
                         if (int.parse(productController
                                 .quantityController.value.text) >
                             0) {
-                          cartController.addToCart(
+                          await cartController.addToCart(
                               item: product,
                               quantity: int.parse(
                                 productController.quantityController.value.text,
                               ),
                               size: size,
                               attributeIndex: attributeIndex);
+
                           productController.quantityController(
                               TextEditingController(text: '1'));
-                          addedToCart(
-                              quantity: int.parse(productController
-                                  .quantityController.value.text));
+
+                          if (await cartController.submitCart()) {
+                            addedToCart(
+                                quantity: int.parse(productController
+                                    .quantityController.value.text));
+                          }
                         }
                       },
                       child: Container(
@@ -992,8 +1046,10 @@ class UIUtils {
 
   // item review bottom sheet
   Future reviewItemBottomSheet({required Product product}) async {
+    String userId = (await storageHelper.get(key: Constants().user)).toString();
+
     ProductReview temp = receiptController.productReviews.firstWhere((p0) =>
-        p0.customerId == receiptController.userId!.value.toString() &&
+        p0.customerId == userId &&
         p0.productId.toLowerCase() == product.name.toLowerCase());
 
     receiptController.userRating(temp.rating - 1);
@@ -1127,7 +1183,7 @@ class UIUtils {
       isDismissible: true,
       backgroundColor: isError ? Colors.red : Colors.green,
       snackPosition: SnackPosition.BOTTOM,
-      colorText: isError ? Colors.white : null,
+      colorText: Colors.white,
       icon: (isError) ? const Icon(Icons.error_outline) : null,
     );
   }
