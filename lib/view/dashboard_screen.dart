@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/state_manager.dart';
 
 import '../model/product_review_model.dart';
 import '../storage_helper.dart';
@@ -49,8 +50,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if ((await storageHelper.get(key: constants.user)).toString() == '') {
       receiptController.createNewUser();
     } else {
-      receiptController.createNewUser(user: int.parse(
-          (await storageHelper.get(key: constants.user)).toString()));
+      receiptController.createNewUser(
+          user: int.parse(
+              (await storageHelper.get(key: constants.user)).toString()));
       // receiptController.createNewUser();
       debugPrint(
           '## current user ID: ${await storageHelper.get(key: constants.user)}');
@@ -109,30 +111,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: GestureDetector(
-        onTap: () => Get.to(() => const FilterScreen()),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            color: Colors.black,
-          ),
-          height: 50,
-          width: 130,
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.filter_list_outlined,
-                color: Colors.white,
+          onTap: () => Get.to(() => const FilterScreen()),
+          child: Obx(
+            () => AnimatedContainer(
+              duration: Duration(milliseconds: 100),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: Colors.black,
               ),
-              Text(
-                'FILTER',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              )
-            ],
-          ),
-        ),
-      ),
+              height: 50,
+              width: filterController.filterCount > 0 ? 150 : 130,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.filter_list_outlined,
+                    color: Colors.white,
+                  ),
+                  Text(
+                    filterController.filterCount > 0
+                        ? 'FILTER (${filterController.filterCount})'
+                        : 'FILTER',
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          )),
     );
   }
 
