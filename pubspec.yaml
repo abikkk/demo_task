@@ -33,6 +33,8 @@ dependencies:
 
   # slider
   syncfusion_flutter_sliders: ^25.2.4
+  flutter_xlider: ^3.5.0 # range slide
+
 
   #    misc
   flutter_slidable: # slide widget feature

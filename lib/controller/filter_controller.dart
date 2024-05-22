@@ -50,391 +50,367 @@ class FilterController extends GetxController {
     }
   }
 
-  setBrand({required int brandIndex}) {
+  setBrandFilter({required int brandIndex, bool isDashboard = false}) {
+    activeBrandIndex(brandIndex);
     // if (isDashboard) {
+    //   setFilterCount();
+    // } else
     if (brandIndex == -1) {
       resetFilters();
     } else {
-      activeBrandIndex(brandIndex);
-      if (filteredProducts.isEmpty) {
-        filteredProducts(productController.products
-            .where((element) =>
-                element.brand.toLowerCase() ==
-                brands[activeBrandIndex.value].name.toLowerCase())
-            .toList());
-      } else {
-        filteredProducts.removeWhere((element) =>
-            element.brand.toLowerCase() !=
-            brands[brandIndex].name.toLowerCase());
-      }
       setFilterCount();
     }
   }
 
-  setGender({required int genderIndex}) {
-    activeGenderIndex(genderIndex);
-
-    switch (activeGenderIndex.value) {
-      case 0:
-        if (filteredProducts.isEmpty) {
-          filteredProducts(productController.products
-              .where((element) => element.gender.toLowerCase() == 'unisex')
-              .toList());
-        } else {
-          filteredProducts.removeWhere(
-              (element) => element.gender.toLowerCase() != 'unisex');
-        }
-      case 1:
-        if (filteredProducts.isEmpty) {
-          filteredProducts(productController.products
-              .where((element) => element.gender.toLowerCase() == 'male')
-              .toList());
-        } else {
-          filteredProducts.removeWhere(
-              (element) => element.gender.toLowerCase() != 'unisex');
-        }
-      case 2:
-        if (filteredProducts.isEmpty) {
-          filteredProducts(productController.products
-              .where((element) => element.gender.toLowerCase() == 'female')
-              .toList());
-        } else {
-          filteredProducts.removeWhere(
-              (element) => element.gender.toLowerCase() != 'unisex');
-        }
-    }
+  setPricingFilter({required double max, required double min}) {
+    hasPriceRange(activePriceMin.value > min || activePriceMax.value < max);
     setFilterCount();
   }
 
-  setSorting({required int sortIndex}) {
+  setSortByFilter({required int sortIndex}) {
     activeSortIndex(sortIndex);
-
-    switch (activeSortIndex.value) {
-      case 0:
-        if (filteredProducts.isEmpty) {
-          filteredProducts.value = productController.products
-            ..toList().sort((a, b) => a.added.compareTo(b.added));
-        }
-        filteredProducts.sort((a, b) => a.added.compareTo(b.added));
-      case 1:
-        if (filteredProducts.isEmpty) {
-          filteredProducts.value = productController.products
-            ..toList().sort((a, b) => a.added.compareTo(b.added));
-        }
-        filteredProducts.sort((a, b) => a.price.compareTo(b.price));
-      case 2:
-        if (filteredProducts.isEmpty) {
-          filteredProducts.value = productController.products
-            ..toList().sort((a, b) => a.added.compareTo(b.added));
-        }
-        filteredProducts.sort((a, b) => b.price.compareTo(a.price));
-    }
     setFilterCount();
   }
 
-  setPricing({required double max, required double min}) {
-    hasPriceRange(activePriceMin.value == min || activePriceMax.value == max);
-    if (hasPriceRange.value) {
-      if (filteredProducts.isEmpty) {
-        filteredProducts.value = productController.products
-            .where((p0) =>
-                p0.price < activePriceMax.value &&
-                p0.price > activePriceMin.value)
-            .toList();
-      } else {
-        filteredProducts.removeWhere((element) =>
-            !(element.price < activePriceMax.value &&
-                element.price > activePriceMin.value));
-      }
-    }
+  setGenderFilter({required int genderIndex}) {
+    activeGenderIndex(genderIndex);
     setFilterCount();
   }
 
-  setColorIndex({required int colorIndex}) {
+  setColorFilter({required int colorIndex}) {
     activeColorIndex(colorIndex);
-
-    switch (activeColorIndex.value) {
-      case 0:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'black') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'black') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-      case 1:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'white') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'white') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-      case 2:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'red') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'red') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-
-      case 3:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'blue') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'blue') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-      case 4:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'green') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'green') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-      case 5:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'orange') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'orange') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-      case 6:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'grey') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'grey') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-      case 7:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'brown') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'brown') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-      case 8:
-        if (filteredProducts.isEmpty) {
-          for (var product in productController.products) {
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'yellow') {
-                filteredProducts.add(product);
-                break;
-              }
-            }
-          }
-        } else {
-          var temp = filteredProducts;
-          List<int> c = [];
-          for (var product in temp) {
-            bool containsColor = false;
-            for (var attribute in product.attribute) {
-              if (attribute.color == 'yellow') {
-                containsColor = true;
-                break;
-              }
-            }
-            if (!containsColor) c.add(temp.indexOf(product));
-          }
-          for (var index in c) {
-            filteredProducts.removeAt(index);
-          }
-          // filteredProducts(temp);
-        }
-    }
     setFilterCount();
   }
 
   setFilterCount() {
     filterCount(0);
-    // filteredProducts.clear();
+    filteredProducts.clear();
 
-    // count brand filter
+    // apply brand filter
     if (activeBrandIndex.value > -1) {
+      filteredProducts(productController.products
+          .where((element) =>
+              element.brand.toLowerCase() ==
+              brands[activeBrandIndex.value].name.toLowerCase())
+          .toList());
       filterCount++;
     }
 
-    // count price range filter
-    if (hasPriceRange.value) filterCount++;
-
-    // count gender filter
-    if (activeGenderIndex.value > -1) {
-      filterCount++;
-    }
-
-    // count sorting filter
+    // apply sorting filter
     if (activeSortIndex.value > -1) {
+      switch (activeSortIndex.value) {
+        case 0:
+          if (filteredProducts.isEmpty) {
+            filteredProducts.value = productController.products
+              ..toList().sort((a, b) => a.added.compareTo(b.added));
+          }
+          filteredProducts.sort((a, b) => a.added.compareTo(b.added));
+        case 1:
+          if (filteredProducts.isEmpty) {
+            filteredProducts.value = productController.products
+              ..toList().sort((a, b) => a.added.compareTo(b.added));
+          }
+          filteredProducts.sort((a, b) => a.price.compareTo(b.price));
+        case 2:
+          if (filteredProducts.isEmpty) {
+            filteredProducts.value = productController.products
+              ..toList().sort((a, b) => a.added.compareTo(b.added));
+          }
+          filteredProducts.sort((a, b) => b.price.compareTo(a.price));
+      }
       filterCount++;
     }
 
-    // count color filter
+    // apply price range filter
+    if (hasPriceRange.value) {
+      if (hasPriceRange.value) {
+        if (filteredProducts.isEmpty) {
+          filteredProducts.value = productController.products
+              .where((p0) =>
+                  p0.price < activePriceMax.value &&
+                  p0.price > activePriceMin.value)
+              .toList();
+        } else {
+          filteredProducts.removeWhere((element) =>
+              !(element.price < activePriceMax.value &&
+                  element.price > activePriceMin.value));
+        }
+      }
+      filterCount++;
+    }
+
+    // apply gender filter
+    if (activeGenderIndex.value > -1) {
+      switch (activeGenderIndex.value) {
+        case 0:
+          if (filteredProducts.isEmpty) {
+            filteredProducts(productController.products
+                .where((element) => element.gender.toLowerCase() == 'unisex')
+                .toList());
+          } else {
+            filteredProducts.removeWhere(
+                (element) => element.gender.toLowerCase() != 'unisex');
+          }
+        case 1:
+          if (filteredProducts.isEmpty) {
+            filteredProducts(productController.products
+                .where((element) => element.gender.toLowerCase() == 'male')
+                .toList());
+          } else {
+            filteredProducts.removeWhere(
+                (element) => element.gender.toLowerCase() != 'unisex');
+          }
+        case 2:
+          if (filteredProducts.isEmpty) {
+            filteredProducts(productController.products
+                .where((element) => element.gender.toLowerCase() == 'female')
+                .toList());
+          } else {
+            filteredProducts.removeWhere(
+                (element) => element.gender.toLowerCase() != 'unisex');
+          }
+      }
+      filterCount++;
+    }
+
+    // apply color filter
     if (activeColorIndex.value > -1) {
+      switch (activeColorIndex.value) {
+        case 0:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'black') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'black') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 1:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'white') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'white') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 2:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'red') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'red') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 3:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'blue') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'blue') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 4:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'green') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'green') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 5:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'orange') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'orange') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 6:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'grey') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'grey') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 7:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'brown') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'brown') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+        case 8:
+          if (filteredProducts.isEmpty) {
+            for (var product in productController.products) {
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'yellow') {
+                  filteredProducts.add(product);
+                  break;
+                }
+              }
+            }
+          } else {
+            List<Product> temp = [];
+            for (var product in filteredProducts) {
+              bool containsColor = false;
+              for (var attribute in product.attribute) {
+                if (attribute.color == 'yellow') {
+                  containsColor = true;
+                  break;
+                }
+              }
+              if (!containsColor) temp.add(product);
+            }
+            for (var unProduct in temp) {
+              filteredProducts.remove(unProduct);
+            }
+          }
+      }
       filterCount++;
     }
   }
@@ -442,6 +418,9 @@ class FilterController extends GetxController {
   resetFilters() {
     activeBrandIndex(-1);
     activeGenderIndex(-1);
+    hasPriceRange(false);
+    // activePriceMax(0.0);
+    // activePriceMin(0.0);
     activeSortIndex(-1);
     activeColorIndex(-1);
     filterCount(0);

@@ -130,7 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 uiUtils.selectUser();
               },
               onTap: () {
-                filterController.setBrand(brandIndex: -1);
+                filterController.setBrandFilter(brandIndex: -1);
               },
               child: uiUtils.tipBubbles(
                   title: 'All',
@@ -146,7 +146,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             itemBuilder: (BuildContext context, int index) {
               return GestureDetector(
                 onTap: () {
-                  filterController.setBrand(brandIndex: index);
+                  filterController.setBrandFilter(
+                      brandIndex: index, isDashboard: true);
                 },
                 child: uiUtils.tipBubbles(
                     title: filterController.brands[index].name,

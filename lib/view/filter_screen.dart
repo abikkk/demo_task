@@ -1,7 +1,9 @@
 import 'package:demo_task/controller/filter_controller.dart';
 import 'package:demo_task/view/ui_helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_xlider/flutter_xlider.dart';
 import 'package:get/get.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import '../controller/product_controller.dart';
 
@@ -127,7 +129,7 @@ class _FilterScreenState extends State<FilterScreen> {
               itemBuilder: (BuildContext context, int index) {
                 return GestureDetector(
                   onTap: () {
-                    filterController.setBrand(brandIndex: index);
+                    filterController.setBrandFilter(brandIndex: index);
                   },
                   child: Column(
                     children: [
@@ -183,12 +185,18 @@ class _FilterScreenState extends State<FilterScreen> {
   }
 
   Widget priceFilterSection() {
+    // setting min and max value for the range slider
     double maxPrice = 20.0, minPrice = 10.0;
-
     for (var product in productController.products) {
       if (product.price > maxPrice) maxPrice = product.price;
       if (product.price < minPrice) minPrice = product.price;
     }
+
+    if (!filterController.hasPriceRange.value) {
+      filterController.activePriceMin(minPrice);
+      filterController.activePriceMax(maxPrice);
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       height: 150,
@@ -196,25 +204,83 @@ class _FilterScreenState extends State<FilterScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: SfRangeSelector(
-              min: minPrice,
+              child: Obx(
+            () => FlutterSlider(
+              values: filterController.hasPriceRange.value
+                  ? [
+                      filterController.activePriceMin.value,
+                      filterController.activePriceMax.value
+                    ]
+                  : [minPrice, maxPrice],
+              rangeSlider: true,
               max: maxPrice,
-              initialValues: SfRangeValues(minPrice, maxPrice),
-              interval: 500,
-              showTicks: false,
-              showLabels: true,
-              stepSize: 5,
-              activeColor: Colors.black,
-              shouldAlwaysShowTooltip: true,
-              enableTooltip: true,
-              child: const SizedBox.shrink(),
-              onChangeEnd: (vals) {
-                filterController.activePriceMin(vals.start);
-                filterController.activePriceMax(vals.end);
-                filterController.setPricing(max: maxPrice, min: minPrice);
+              min: minPrice,
+              tooltip: FlutterSliderTooltip(
+                boxStyle: const FlutterSliderTooltipBox(
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.black)),
+                textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white),
+              ),
+              onDragCompleted: (handlerIndex, lowerValue, upperValue) {
+                debugPrint(lowerValue.toString());
+                debugPrint(upperValue.toString());
+                filterController.activePriceMin(lowerValue);
+                filterController.activePriceMax(upperValue);
+                filterController.setPricingFilter(max: maxPrice, min: minPrice);
               },
+              trackBar: const FlutterSliderTrackBar(
+                activeTrackBarHeight: 2,
+                activeTrackBar: BoxDecoration(color: Colors.black),
+              ),
+              handler: FlutterSliderHandler(
+                decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(25)),
+                child: Container(
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25)),
+                ),
+              ),
+              rightHandler: FlutterSliderHandler(
+                decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(25)),
+                child: Container(
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25)),
+                ),
+              ),
             ),
-          ),
+          )
+              // SfRangeSelector(
+              //   min: minPrice,
+              //   max: maxPrice,
+              //   controller: ,
+              //   initialValues: filterController.hasPriceRange.value
+              //       ? SfRangeValues(filterController.activePriceMin.value,
+              //           filterController.activePriceMax.value)
+              //       : SfRangeValues(minPrice, maxPrice),
+              //   interval: 500,
+              //   showTicks: false,
+              //   showLabels: true,
+              //   stepSize: 5,
+              //   activeColor: Colors.black,
+              //   shouldAlwaysShowTooltip: true,
+              //   enableTooltip: true,
+              //   child: const SizedBox.shrink(),
+              //   onChangeEnd: (rangeValue) {
+              //     filterController.activePriceMin(rangeValue.start);
+              //     filterController.activePriceMax(rangeValue.end);
+              //   },
+              // ),
+              ),
         ],
       ),
     );
@@ -232,7 +298,7 @@ class _FilterScreenState extends State<FilterScreen> {
               scrollDirection: Axis.horizontal,
               children: [
                 GestureDetector(
-                  onTap: () => filterController.setSorting(sortIndex: 0),
+                  onTap: () => filterController.setSortByFilter(sortIndex: 0),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -259,7 +325,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setSorting(sortIndex: 1),
+                  onTap: () => filterController.setSortByFilter(sortIndex: 1),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -286,7 +352,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setSorting(sortIndex: 2),
+                  onTap: () => filterController.setSortByFilter(sortIndex: 2),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -326,7 +392,7 @@ class _FilterScreenState extends State<FilterScreen> {
           children: [
             Expanded(
               child: GestureDetector(
-                onTap: () => filterController.setGender(genderIndex: 1),
+                onTap: () => filterController.setGenderFilter(genderIndex: 1),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 5),
                   height: 35,
@@ -355,7 +421,7 @@ class _FilterScreenState extends State<FilterScreen> {
             ),
             Expanded(
               child: GestureDetector(
-                onTap: () => filterController.setGender(genderIndex: 2),
+                onTap: () => filterController.setGenderFilter(genderIndex: 2),
                 child: Container(
                   height: 35,
                   // width: 100,
@@ -384,7 +450,7 @@ class _FilterScreenState extends State<FilterScreen> {
             ),
             Expanded(
               child: GestureDetector(
-                onTap: () => filterController.setGender(genderIndex: 0),
+                onTap: () => filterController.setGenderFilter(genderIndex: 0),
                 child: Container(
                   height: 35,
                   // width: 100,
@@ -426,7 +492,7 @@ class _FilterScreenState extends State<FilterScreen> {
               scrollDirection: Axis.horizontal,
               children: [
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 0),
+                  onTap: () => filterController.setColorFilter(colorIndex: 0),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -462,7 +528,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 1),
+                  onTap: () => filterController.setColorFilter(colorIndex: 1),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -498,7 +564,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 2),
+                  onTap: () => filterController.setColorFilter(colorIndex: 2),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -534,7 +600,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 3),
+                  onTap: () => filterController.setColorFilter(colorIndex: 3),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -570,7 +636,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 4),
+                  onTap: () => filterController.setColorFilter(colorIndex: 4),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -606,7 +672,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 5),
+                  onTap: () => filterController.setColorFilter(colorIndex: 5),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -642,7 +708,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 6),
+                  onTap: () => filterController.setColorFilter(colorIndex: 6),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -678,7 +744,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 7),
+                  onTap: () => filterController.setColorFilter(colorIndex: 7),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
@@ -714,7 +780,7 @@ class _FilterScreenState extends State<FilterScreen> {
                   width: 5,
                 ),
                 GestureDetector(
-                  onTap: () => filterController.setColorIndex(colorIndex: 8),
+                  onTap: () => filterController.setColorFilter(colorIndex: 8),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 5),
                     height: 35,
