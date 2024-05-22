@@ -114,7 +114,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onTap: () => Get.to(() => const FilterScreen()),
           child: Obx(
             () => AnimatedContainer(
-              duration: Duration(milliseconds: 100),
+              duration: const Duration(milliseconds: 100),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 color: Colors.black,

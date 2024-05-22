@@ -120,7 +120,7 @@ class UIUtils {
                       Get.back();
                       showSnackBar(
                           title: 'User changed!',
-                          message: 'Current user: $userId');
+                          message: 'Current user: ${index + 1}');
                     },
                     child: Row(
                       children: [
@@ -132,9 +132,6 @@ class UIUtils {
                             fontWeight: FontWeight.w700,
                           ),
                         )),
-                        (Constants().userId[index] == userId)
-                            ? const Icon(Icons.check)
-                            : const SizedBox.shrink()
                       ],
                     ),
                   ),
@@ -1048,12 +1045,20 @@ class UIUtils {
   Future reviewItemBottomSheet({required Product product}) async {
     String userId = (await storageHelper.get(key: Constants().user)).toString();
 
-    ProductReview temp = receiptController.productReviews.firstWhere((p0) =>
-        p0.customerId == userId &&
-        p0.productId.toLowerCase() == product.name.toLowerCase());
-
-    receiptController.userRating(temp.rating - 1);
-    receiptController.userReview(TextEditingController(text: temp.description));
+    if (receiptController.productReviews.indexWhere((element) =>
+            element.customerId == userId &&
+            element.productId.toLowerCase() == product.name.toLowerCase()) !=
+        1) {
+      ProductReview temp = receiptController.productReviews.firstWhere((p0) =>
+          p0.customerId == userId &&
+          p0.productId.toLowerCase() == product.name.toLowerCase());
+      receiptController.userRating(temp.rating - 1);
+      receiptController
+          .userReview(TextEditingController(text: temp.description));
+    } else {
+      receiptController.userRating(0);
+      receiptController.userReview(TextEditingController(text: ''));
+    }
 
     return Get.bottomSheet(
       backgroundColor: Colors.white,
