@@ -14,7 +14,9 @@ class FilterController extends GetxController {
 
   ProductController productController = Get.find<ProductController>();
   RxList<Product> filteredProducts = <Product>[].obs; // filtered product list
-
+  RxBool hasPriceRange = false.obs; // filter price
+  RxDouble activePriceMin = 0.0.obs,
+      activePriceMax = 0.0.obs; // price range filter
   RxInt activeBrandIndex = (-1).obs, // filter brand
       activeGenderIndex = (-1).obs, // filter gender
       activeSortIndex = (-1).obs, // filter sorting
@@ -126,6 +128,24 @@ class FilterController extends GetxController {
             ..toList().sort((a, b) => a.added.compareTo(b.added));
         }
         filteredProducts.sort((a, b) => b.price.compareTo(a.price));
+    }
+    setFilterCount();
+  }
+
+  setPricing({required double max, required double min}) {
+    hasPriceRange(activePriceMin.value == min || activePriceMax.value == max);
+    if (hasPriceRange.value) {
+      if (filteredProducts.isEmpty) {
+        filteredProducts.value = productController.products
+            .where((p0) =>
+                p0.price < activePriceMax.value &&
+                p0.price > activePriceMin.value)
+            .toList();
+      } else {
+        filteredProducts.removeWhere((element) =>
+            !(element.price < activePriceMax.value &&
+                element.price > activePriceMin.value));
+      }
     }
     setFilterCount();
   }
@@ -395,27 +415,28 @@ class FilterController extends GetxController {
     filterCount(0);
     // filteredProducts.clear();
 
-    // apply brand filter
+    // count brand filter
     if (activeBrandIndex.value > -1) {
       filterCount++;
     }
 
-    // apply gender filter
+    // count price range filter
+    if (hasPriceRange.value) filterCount++;
+
+    // count gender filter
     if (activeGenderIndex.value > -1) {
       filterCount++;
     }
 
-    // apply sorting filter
+    // count sorting filter
     if (activeSortIndex.value > -1) {
       filterCount++;
     }
 
-    // apply color filter
+    // count color filter
     if (activeColorIndex.value > -1) {
       filterCount++;
     }
-
-    debugPrint(productController.products.length.toString());
   }
 
   resetFilters() {

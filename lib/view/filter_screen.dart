@@ -206,10 +206,13 @@ class _FilterScreenState extends State<FilterScreen> {
               stepSize: 5,
               activeColor: Colors.black,
               shouldAlwaysShowTooltip: true,
-              // startThumbIcon: const Icon(Icons.circle_notifications_sharp),
-              // endThumbIcon: const Icon(Icons.circle_notifications_sharp),
               enableTooltip: true,
               child: const SizedBox.shrink(),
+              onChangeEnd: (vals) {
+                filterController.activePriceMin(vals.start);
+                filterController.activePriceMax(vals.end);
+                filterController.setPricing(max: maxPrice, min: minPrice);
+              },
             ),
           ),
         ],
