@@ -69,7 +69,7 @@ class ReceiptController extends GetxController {
     }
   }
 
-  getProductReview() async {
+  Future getProductReview() async {
     try {
       // debugPrint('## getting product reviews');
 
@@ -168,7 +168,7 @@ class ReceiptController extends GetxController {
         });
       } else {
         await firebase.collection(constants.review).add({
-          '_userId': (await storageHelper.get(key: constants.user)).toString(),
+          'userId': (await storageHelper.get(key: constants.user)).toString(),
           'product': product.name,
           'description': userReview.value.text.toString(),
           'rating': userRating.value + 1,
@@ -187,11 +187,10 @@ class ReceiptController extends GetxController {
       activeReceipt = null;
       if (reviewed) {
         cartController.activeCart.clear();
-        getProductReview();
         UIUtils().showSnackBar(
             title: "Success!", message: "Product reviewed successfully!!");
+        await getProductReview();
         productController.assignRatingAndReview();
-        Get.offAll(() => const DashboardScreen());
       }
     }
   }

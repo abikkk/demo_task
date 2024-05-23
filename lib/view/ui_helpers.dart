@@ -451,10 +451,10 @@ class UIUtils {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          receiptController.receipts[index].code,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
+        // Text(
+        //   receiptController.receipts[index].code,
+        //   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        // ),
         const SizedBox(
           height: 10,
         ),
@@ -721,7 +721,7 @@ class UIUtils {
       Container(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           width: 1.sw,
-          height: 0.5.sh,
+          height: 0.3.sh,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1048,7 +1048,7 @@ class UIUtils {
     if (receiptController.productReviews.indexWhere((element) =>
             element.customerId == userId &&
             element.productId.toLowerCase() == product.name.toLowerCase()) !=
-        1) {
+        -1) {
       ProductReview temp = receiptController.productReviews.firstWhere((p0) =>
           p0.customerId == userId &&
           p0.productId.toLowerCase() == product.name.toLowerCase());
