@@ -257,27 +257,6 @@ class _FilterScreenState extends State<FilterScreen> {
               ),
             ),
           )
-              // SfRangeSelector(
-              //   min: minPrice,
-              //   max: maxPrice,
-              //   controller: ,
-              //   initialValues: filterController.hasPriceRange.value
-              //       ? SfRangeValues(filterController.activePriceMin.value,
-              //           filterController.activePriceMax.value)
-              //       : SfRangeValues(minPrice, maxPrice),
-              //   interval: 500,
-              //   showTicks: false,
-              //   showLabels: true,
-              //   stepSize: 5,
-              //   activeColor: Colors.black,
-              //   shouldAlwaysShowTooltip: true,
-              //   enableTooltip: true,
-              //   child: const SizedBox.shrink(),
-              //   onChangeEnd: (rangeValue) {
-              //     filterController.activePriceMin(rangeValue.start);
-              //     filterController.activePriceMax(rangeValue.end);
-              //   },
-              // ),
               ),
         ],
       ),
